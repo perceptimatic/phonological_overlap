@@ -1,4 +1,4 @@
-discrimination <- read_csv(
+discr <- read_csv(
   DISCR_DATA,
   col_types = cols(
     TGT_first = col_logical(),
@@ -12,13 +12,13 @@ discrimination <- read_csv(
     .default = col_character()
   ),
   name_repair = "unique_quiet"
-) %>%
-  select(-`...1`) %>%
-  clean_discrimination_items() %>%
+) |>
+  select(-`...1`) |>
+  clean_discrimination_items() |>
   clean_discrimination_responses()
 
-discriminability_by_asymm_contrast <- repeated_average(
-  discrimination,
+discr_asc <- repeated_average(
+  discr,
   c(
     "filename",
     "Context",
@@ -28,8 +28,8 @@ discriminability_by_asymm_contrast <- repeated_average(
   c("Accuracy", "Accuracy and Certainty")
 ) 
 
-discriminability_by_contrast <- repeated_average(
-  discrimination,
+discr_c <- repeated_average(
+  discr,
   c(
     "filename",
     "Context",
@@ -41,10 +41,10 @@ discriminability_by_contrast <- repeated_average(
 ) 
 
 
-discriminability_by_contrast_wide <- discriminability_by_contrast %>%
+discr_c_wide <- discr_c |>
   pivot_wider(names_from=`Listener Group`,
               values_from=c(`Accuracy`, `Accuracy and Certainty`),
-              names_glue="{.value} {`Listener Group`}") %>%
+              names_glue="{.value} {`Listener Group`}") |>
   mutate(`Accuracy and Certainty Difference`=
            `Accuracy and Certainty French`-
            `Accuracy and Certainty English`,
