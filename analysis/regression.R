@@ -1,5 +1,5 @@
 get_filename <- function(model_name) {
-  return(paste0(MODELS, "/model_", model_name))
+  return("model_", model_name)
 }
 
 makenamesize <- function(d) {
