@@ -28,3 +28,19 @@ discr_idpreds_c <- left_join(
     "Phone Contrast (Language)"
   )
 )
+
+discr_preds <- left_join(
+  discr,
+  distances %>% select(filename, `Δ DTW Mel Filterbank`),
+  by = "filename"
+) %>% left_join(
+  discr_idpreds_c %>%
+    select(`Phonological Overlap`,
+           `Phone Language (Long)`, `Phone Language (Code)`,
+           `Phone Contrast (Language)`, `Listener Group`),
+  by = c(
+    "Phone Language (Long)",
+    "Phone Language (Code)",
+    "Phone Contrast (Language)",
+    "Listener Group")) 
+
