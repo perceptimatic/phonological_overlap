@@ -47,14 +47,24 @@ get_assimilation_vectors <-
     return(assimilation_vectors)
   }
 
+# A few items were tested weirdly often, and only for French-speaking listeners.
+# Don't have any idea why, and don't want them to mess up the results,
+# so we use the following table to find them so we can remove them.
+assimilation_with_normal_n <-
+  read_id(IDENT_DATA) |>
+  summarize(n=n(), .by=c(`Listener Group`, filename)) |>
+  filter(n < 10) |>
+  select(-n)
+
 assimilation_vectors <- 
   read_id(IDENT_DATA) |>
+  right_join(assimilation_with_normal_n) |>
   group_by(`Listener Group`) |>
   do(get_assimilation_vectors(.,  c("Context", "Phone (Language)",
                                     "Phone", "Phone Language (Long)",
                                     "Phone Language (Code)"),
                               "Response", "Goodness") |> 
-       repeated_average(c("Context", "Phone (Language)"),
+       repeated_average("Phone (Language)",
                         c("Phone", "Phone Language (Long)",
                           "Phone Language (Code)", "Response"),
                         c("Proportion of Responses", "Goodness"),
@@ -85,32 +95,42 @@ haskins_score <- function(ass_tgt, ass_oth, with_p50 = TRUE) {
   return(as.numeric(p + 0.5 * p50))
 }
 
-assimilation_to_contrast <- function(phones, assimilation, phone_var) {
-  assimilation_p1 <- assimilation |> rename(`Phone 1` = {{phone_var}}) |>
-    rename_with(~ paste0(.x, ":Phone 1"), .cols = !`Phone 1`)
-  assimilation_p2 <- assimilation |> rename(`Phone 2` = {{phone_var}}) |>
-    rename_with(~ paste0(.x, ":Phone 2"), .cols = !`Phone 2`)
+assimilation_to_contrast <- function(phones, assimilation, unit_var, unit="Phone") {
+  unit_1_s <- paste0(unit, " 1")
+  unit_2_s <- paste0(unit, " 2")
+  unit_contrast_s <- paste0(unit, " Contrast")
+  assimilation_p1 <- assimilation |> rename(!!unit_1_s := {{unit_var}}) |>
+    rename_with(~ paste0(.x, ":", unit_1_s), .cols = !{{unit_1_s}})
+  assimilation_p2 <- assimilation |> rename(!!unit_2_s := {{unit_var}}) |>
+    rename_with(~ paste0(.x, ":", unit_2_s), .cols = !{{unit_2_s}})
+  
   contrasts <- crossing(A = phones, B = phones) |> filter(A != B)  |>
-    transmute(
-      `Phone 1` = get_phone1(A, B),
-      `Phone 2` = get_phone2(A, B),
-      `Phone Contrast` = contrast_label(`Phone 1`, `Phone 2`)
+    mutate(
+      !!unit_1_s := get_phone1(A, B),
+      !!unit_2_s := get_phone2(A, B),
+      .keep="none"
+    ) |>
+    mutate(
+      !!unit_contrast_s := contrast_label(.data[[{{unit_1_s}}]],
+                                          .data[[{{unit_2_s}}]])
     ) |>
     unique()
+  
   contrasts_with_ass <- contrasts |>
-    left_join(assimilation_p1, by = "Phone 1") |>
-    left_join(assimilation_p2, by = "Phone 2")
+    left_join(assimilation_p1, by = unit_1_s) |>
+    left_join(assimilation_p2, by = unit_2_s)
   return(contrasts_with_ass)
 }
 
 assimilation_to_contrast_grouped <- function(assimilation,
-                                             phone_var,
+                                             unit_var,
                                              value_vars,
-                                             grouping_vars) {
+                                             grouping_vars,
+                                             unit = "Phone") {
   assimilation |>
-    reframe(assimilation_to_contrast(.data[[phone_var]], pick(all_of(
-      c(value_vars, phone_var)
-    )), phone_var),
+    reframe(assimilation_to_contrast(.data[[unit_var]], pick(all_of(
+      c(value_vars, unit_var)
+    )), unit_var, unit),
     .by = all_of(grouping_vars))
 }
 
@@ -143,11 +163,12 @@ idpreds <- assimilation_vectors |>
   mutate(
     `Top Percentage` = map_dbl(Assimilation, ~ .x[[max.col(.x)]]),
     `Top Goodness` = map2_dbl(Assimilation, Goodness, ~ .y[[max.col(.x)]]),
-    `Top Choice` = map_chr(Assimilation, ~ str_split_i(colnames(.x)[max.col(.x)], "_", 3))
+    `Top Choice` = map_chr(Assimilation, ~ str_split_i(colnames(.x)[max.col(.x)], "_", 3)),
+    `Choice Set`=map_chr(Assimilation, ~ paste(str_split_i(colnames(.x)[as.matrix(.x) >= 0.01], "_", 3), collapse=" "))
   ) |>
   assimilation_to_contrast_grouped(
     "Phone",
-    c("Assimilation", "Top Goodness", "Top Choice", "Top Percentage"),
+    c("Assimilation", "Top Goodness", "Top Choice", "Top Percentage", "Choice Set"),
     c(
       "Listener Group",
       "Phone Language (Long)",
@@ -163,11 +184,57 @@ idpreds <- assimilation_vectors |>
       ~ skld_score(unlist(.x), unlist(.y), 0.001)
     ),
     Dot = map2_dbl(`Assimilation:Phone 1`, `Assimilation:Phone 2`, ~ sum(.x * .y)),
+    Cosine = map2_dbl(`Assimilation:Phone 1`, `Assimilation:Phone 2`, ~ sum(.x * .y)/sqrt((sum(.x * .x)*sum(.y * .y)))),
+    Euclidean = map2_dbl(`Assimilation:Phone 1`, `Assimilation:Phone 2`, ~ sqrt(sum((.x - .y)^2))),
+    SSDiff = map2_dbl(`Assimilation:Phone 1`, `Assimilation:Phone 2`, ~ (sum((.x - .y)^2))),
     Haskins = map2_dbl(
       `Assimilation:Phone 1`,
       `Assimilation:Phone 2`,
       ~ 1 - 0.5 * (haskins_score(.x, .y) + haskins_score(.y, .x))
     ),
     `Maximum Categorization Threshold` = map2_dbl(`Top Percentage:Phone 1`, `Top Percentage:Phone 2`, min),
-    `Same Top Choice` = map2_chr(`Top Choice:Phone 1`, `Top Choice:Phone 2`, ~ c("No", "Yes")[(.x == .y) + 1])
+    `Same Top Choice` = map2_chr(`Top Choice:Phone 1`, `Top Choice:Phone 2`, ~ c("No", "Yes")[(.x == .y) + 1]),
+    `Same Choice Set` = map2_chr(`Choice Set:Phone 1`, `Choice Set:Phone 2`, ~ c("No", "Yes")[(.x == .y) + 1])
   )
+
+#assimilation_vectors_byitem <- 
+#  read_id(IDENT_DATA) |>
+#  group_by(`Listener Group`) |>
+#  do(get_assimilation_vectors(.,  c("filename", "Context", "Phone (Language)",
+#                                    "Phone", "Phone Language (Long)",
+#                                    "Phone Language (Code)"),
+#                              "Response", "Goodness")) |>
+#  ungroup()
+#
+#
+#idpreds_byitem <- assimilation_vectors_byitem |>
+#  pivot_wider(
+#    id_cols = c("filename", "Phone", "Phone Language (Long)", "Phone Language (Code)"),
+#    names_from = c("Listener Group", "Response"),
+#    values_from = c("Proportion of Responses", "Goodness")
+#  ) |>
+#  nest(
+#    `Assimilation:English` = starts_with("Proportion of Responses_English_"),
+#    `Assimilation:French` = starts_with("Proportion of Responses_French_"),
+#    `Goodness:English` = starts_with("Goodness_English_"),
+#    `Goodness:French` = starts_with("Goodness_French_")
+#  ) |>
+#  pivot_longer(
+#    starts_with("Assimilation") | starts_with("Goodness"),
+#    names_pattern = "(.*):(.*)",
+#    names_to = c(".value", "Listener Group")
+#  ) |>
+#  assimilation_to_contrast_grouped(
+#    "filename",
+#    "Assimilation",
+#    "Listener Group",
+#    "Item"
+#  ) |>
+#  mutate(
+#    `Phonological Overlap` = map2_dbl(
+#      `Assimilation:Item 1`,
+#      `Assimilation:Item 2`,
+#      ~ skld_score(unlist(.x), unlist(.y), 0.001)
+#    )
+#  )
+#

@@ -17,16 +17,16 @@ discr <- read_csv(
   clean_discrimination_items() |>
   clean_discrimination_responses()
 
-discr_asc <- repeated_average(
-  discr,
-  c(
-    "filename",
-    "Context",
-    "Phone Contrast Asymmetrical (Language)"
-  ),
-  c("Listener Group", "Phone Language (Code)", "Phone Language (Long)"),
-  c("Accuracy", "Accuracy and Certainty")
-) 
+#discr_asc <- repeated_average(
+#  discr,
+#  c(
+#    "filename",
+#    "Context",
+#    "Phone Contrast Asymmetrical (Language)"
+#  ),
+#  c("Listener Group", "Phone Language (Code)", "Phone Language (Long)"),
+#  c("Accuracy", "Accuracy and Certainty")
+#) 
 
 discr_c <- repeated_average(
   discr,
@@ -40,6 +40,13 @@ discr_c <- repeated_average(
   c("Accuracy", "Accuracy and Certainty")
 ) 
 
+
+discr_f <- repeated_average(
+  discr,
+  "filename",
+  c("Listener Group", "filename"),
+  c("Accuracy", "Accuracy and Certainty")
+) 
 
 discr_c_wide <- discr_c |>
   pivot_wider(names_from=`Listener Group`,
