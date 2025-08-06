@@ -17,6 +17,7 @@ discr <- read_csv(
   clean_discrimination_items() |>
   clean_discrimination_responses()
 
+
 #discr_asc <- repeated_average(
 #  discr,
 #  c(
@@ -36,7 +37,7 @@ discr_c <- repeated_average(
     "Phone Contrast Asymmetrical (Language)",
     "Phone Contrast (Language)"
   ),
-  c("Listener Group", "Phone Language (Code)", "Phone Language (Long)"),
+  c("Listener Group", "Phone Language (Code)", "Phone Language (Long)", "Phone Contrast"),
   c("Accuracy", "Accuracy and Certainty")
 ) 
 

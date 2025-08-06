@@ -17,3 +17,4 @@ modelling/reps/
 modelling/checkpoints/
 modelling/mfa/
 *.npy
+paper/

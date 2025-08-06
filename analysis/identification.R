@@ -135,6 +135,8 @@ assimilation_to_contrast_grouped <- function(assimilation,
 }
 
 skld_score <- function(ass_tgt, ass_oth, eps) {
+  if (eps >= min(c(ass_tgt[!near(ass_tgt, 0)], ass_oth[!near(ass_oth, 0)])))
+    stop("Epsilon must be smaller than all observed non-zero values")
   k <- max_skld(ass_tgt, eps)
   t <- smooth(ass_tgt, eps)
   o <- smooth(ass_oth, eps)
@@ -178,11 +180,16 @@ idpreds <- assimilation_vectors |>
   mutate(`Phone Contrast (Language)` = paste0(`Phone Contrast`, " (", `Phone Language (Code)`, ")")) |>
   mutate(
     `Goodness Difference` = abs(`Top Goodness:Phone 1` - `Top Goodness:Phone 2`),
-    `Phonological Overlap` = map2_dbl(
+    `NeSssKL Overlap (0.00000001)` = map2_dbl(
       `Assimilation:Phone 1`,
       `Assimilation:Phone 2`,
-      ~ skld_score(unlist(.x), unlist(.y), 0.001)
+      ~ skld_score(unlist(.x), unlist(.y), 1e-8)
     ),
+     `NeSssKL Overlap (0.001)` = map2_dbl(
+      `Assimilation:Phone 1`,
+      `Assimilation:Phone 2`,
+      ~ skld_score(unlist(.x), unlist(.y), 1e-3)
+    ),   
     Dot = map2_dbl(`Assimilation:Phone 1`, `Assimilation:Phone 2`, ~ sum(.x * .y)),
     Cosine = map2_dbl(`Assimilation:Phone 1`, `Assimilation:Phone 2`, ~ sum(.x * .y)/sqrt((sum(.x * .x)*sum(.y * .y)))),
     Euclidean = map2_dbl(`Assimilation:Phone 1`, `Assimilation:Phone 2`, ~ sqrt(sum((.x - .y)^2))),
@@ -190,12 +197,13 @@ idpreds <- assimilation_vectors |>
     Haskins = map2_dbl(
       `Assimilation:Phone 1`,
       `Assimilation:Phone 2`,
-      ~ 1 - 0.5 * (haskins_score(.x, .y) + haskins_score(.y, .x))
+      ~ 0.5 * (haskins_score(.x, .y) + haskins_score(.y, .x))
     ),
-    `Maximum Categorization Threshold` = map2_dbl(`Top Percentage:Phone 1`, `Top Percentage:Phone 2`, min),
+    `Minimum Categorization Strength` = map2_dbl(`Top Percentage:Phone 1`, `Top Percentage:Phone 2`, min),
     `Same Top Choice` = map2_chr(`Top Choice:Phone 1`, `Top Choice:Phone 2`, ~ c("No", "Yes")[(.x == .y) + 1]),
     `Same Choice Set` = map2_chr(`Choice Set:Phone 1`, `Choice Set:Phone 2`, ~ c("No", "Yes")[(.x == .y) + 1])
   )
+
 
 #assimilation_vectors_byitem <- 
 #  read_id(IDENT_DATA) |>

@@ -3,10 +3,11 @@ color_scheme_set(c("#7ed1e6", "black", "black", "black", "black", "black"))
 cp_theme <- function() {
   theme_bw() +
     theme(legend.position = "bottom",
-          text=element_text(family="Arial", size=14),
+          text=element_text(family="Arial", size=12),
           axis.text=element_text(colour="black"),
           axis.title=element_text(size=12),
-          legend.text=element_text(size=14),
+          legend.text=element_text(size=12),
+          legend.title=element_text(size=12, vjust=1),
           legend.box.spacing = unit(0, "inches"),
           strip.background = element_rect(fill="white"))
 }
@@ -61,3 +62,25 @@ cumord_prob_plot <- function(cutpoints, categories, print_precision=2, dontprint
     scale_fill_brewer(palette="RdYlBu", direction=-1) +
     coord_flip(expand=FALSE)
 }
+
+highlight_scatterplot <- function(d, variable_x, variable_y,
+                              variable_label, variable_point_types,
+                              seed=42) {
+  ggplot(
+    d,
+    aes(x = .data[[variable_x]],
+        y = .data[[variable_y]],
+        shape = .data[[variable_point_types]],
+        fill = .data[[variable_point_types]])
+  ) +
+    geom_point() +
+    geom_label_repel(
+      aes(label = ifelse(.data[[variable_point_types]] != "D", .data[[variable_label]], "")),
+      family = "Alegreya Sans",
+      size = 12 * 0.352777778,
+      seed = seed
+    ) +
+    scale_shape_manual(values=c(D=NA, T1=24, T0=23, T2=25)) +
+    scale_fill_manual(values=c(D="#ffffff", T1="#99d6c5", T0="#fcb999", T2="#b3bddc"))
+}
+  

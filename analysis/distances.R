@@ -5,8 +5,11 @@ distances <- readr::read_csv(DISTANCES,
                                             .default = col_guess())) |>
   calculate_all_deltas() |>
   clean_discrimination_items() |>
-  mutate(`Δ DTW Mel Filterbank`=`fb_dtw_cosine_Δ`)
-  
+  mutate(log_fb_dtw_cosine_Δ=
+           log(replaceif0(fb_dtw_cosine_Δ - min(fb_dtw_cosine_Δ), 0.0001))) |>
+  mutate(`Spectral Distinctness`=`fb_dtw_cosine_Δ`,
+         `Log Spectral Distinctness`=log_fb_dtw_cosine_Δ)
+         
 distances_c <- repeated_average(
   distances,
   c(
@@ -15,7 +18,9 @@ distances_c <- repeated_average(
     "Phone Contrast Asymmetrical (Language)",
     "Phone Contrast (Language)"
   ),
-  c("Phone Language (Code)", "Phone Language (Long)"),
+  c("Phone Language (Code)", "Phone Language (Long)", "Phone Contrast"),
   names(distances)[grepl("_Δ$", names(distances))]
-) |> rename(`Δ DTW Mel Filterbank`=`fb_dtw_cosine_Δ`)
+) |> 
+  rename(`Spectral Distinctness`=`fb_dtw_cosine_Δ`) |>
+  mutate(`Log Spectral Distinctness`=log(replaceif0(`Spectral Distinctness` - min(`Spectral Distinctness`), 0.0001)))
 
