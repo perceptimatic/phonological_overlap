@@ -44,7 +44,7 @@ model_diff_mcs_acc <- run_brms_model(
 model_diff_mcs_acc <- add_criterion(model_diff_mcs_acc, "loo", file = get_filename("diff_mcs_acc"))
 
 
-
+print(model_diff_mcs_acc)
 
 plot_diff_mcs_acc_model <- mcmc_areas(model_diff_mcs_acc,
                                      pars=names(model_diff_mcs_acc$fit)[1:6],

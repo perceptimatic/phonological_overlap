@@ -190,6 +190,7 @@ idpreds <- assimilation_vectors |>
       `Assimilation:Phone 2`,
       ~ skld_score(unlist(.x), unlist(.y), 1e-3)
     ),   
+    MinSum = map2_dbl(`Assimilation:Phone 1`, `Assimilation:Phone 2`, ~ sum(pmin(.x * .y))),
     Dot = map2_dbl(`Assimilation:Phone 1`, `Assimilation:Phone 2`, ~ sum(.x * .y)),
     Cosine = map2_dbl(`Assimilation:Phone 1`, `Assimilation:Phone 2`, ~ sum(.x * .y)/sqrt((sum(.x * .x)*sum(.y * .y)))),
     Euclidean = map2_dbl(`Assimilation:Phone 1`, `Assimilation:Phone 2`, ~ sqrt(sum((.x - .y)^2))),

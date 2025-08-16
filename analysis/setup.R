@@ -91,6 +91,7 @@ discr_preds <- left_join(
   discr_idpreds_c |>
     rename(`Contrast Accuracy and Certainty`=`Accuracy and Certainty`) %>%
     select(`NeSssKL Overlap (0.00000001)`, `NeSssKL Overlap (0.001)`,
+           MinSum,
            `Phone Language (Long)`, `Phone Language (Code)`, `Phone Contrast`,
            `Phone Contrast (Language)`, `Listener Group`, `Goodness Difference`,
            Haskins, Dot, Cosine, Euclidean, SSDiff,

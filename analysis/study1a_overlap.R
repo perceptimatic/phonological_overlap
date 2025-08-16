@@ -1,5 +1,7 @@
 source("setup.R")
 
+options(mc.cores=4)
+
 discr_by_overlap_plot <- ggplot(
   discr_idpreds_c,
   aes(
@@ -117,3 +119,14 @@ model_overlapinf_acc <- run_brms_model(
   discr_preds, get_filename("overlapinf_acc"), "", "bernoulli")
 
 model_overlapinf_acc <- add_criterion(model_overlapinf_acc, "loo", file = get_filename("overlapinf_acc"))
+
+
+model_minsum_acc <- run_brms_model(
+  formula(
+    "Accuracy ~
+                    MinSum*Listener.Group +Listener.Group*Trial.Number +
+                    (1|Participant) + (1 + Listener.Group|filename)"),
+  discr_preds, get_filename("minsum_acc"), "", "bernoulli")
+
+model_minsum_acc <- add_criterion(model_minsum_acc, "loo", file = get_filename("minsum_acc"))
+
