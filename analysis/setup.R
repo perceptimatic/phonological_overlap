@@ -11,6 +11,7 @@ library(patchwork)
 library(ggrepel)
 library(e1071)
 library(scales)
+library(testit)
 
 set_cmdstan_path("~/.local/cmdstan-2.36.0")
 
