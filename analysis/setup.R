@@ -11,11 +11,12 @@ library(patchwork)
 library(ggrepel)
 library(e1071)
 library(scales)
-library(testit)
+library(fpCompare)
 
 set_cmdstan_path("~/.local/cmdstan-2.36.0")
 
-conflicts_prefer(dplyr::filter, dplyr::select, e1071::kurtosis)
+conflicts_prefer(dplyr::filter, dplyr::select, e1071::kurtosis,
+                 fpCompare::`%==%`)
 
 source("pathnames.R")
 source("aggregation.R")
