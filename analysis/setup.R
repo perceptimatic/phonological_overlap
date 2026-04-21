@@ -12,7 +12,7 @@ library(ggrepel)
 library(e1071)
 library(scales)
 
-set_cmdstan_path("~/cmdstan-2.36.0")
+set_cmdstan_path("~/.local/cmdstan-2.36.0")
 
 conflicts_prefer(dplyr::filter, dplyr::select, e1071::kurtosis)
 

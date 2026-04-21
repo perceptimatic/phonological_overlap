@@ -5,7 +5,7 @@ options(mc.cores=4)
 discr_by_overlap_plot <- ggplot(
   discr_idpreds_c,
   aes(
-    x = `NeSssKL Overlap (0.001)`,
+    x = `JS Overlap`,
     y = `Accuracy`,
     fill = `Same Top Choice`
   )
@@ -44,14 +44,14 @@ discr_by_overlap_highlight_plot <- highlight_scatterplot(
           ifelse(
             `Phone Contrast (Language)` %in% PHONES_ENGLISH,  "T2", "D")))) |>
     filter(`Point Type` != "D"),
-  "NeSssKL Overlap (0.001)",
+  "JS Overlap",
   "Accuracy",
   "Phone Contrast",
   "Point Type", seed=2) + 
   cp_theme() +
   theme(legend.position = "none") + 
   geom_smooth(data=discr_idpreds_c,
-              aes(y=`Accuracy`, x=`NeSssKL Overlap (0.001)`),
+              aes(y=`Accuracy`, x=`JS Overlap`),
               colour="#00000044", lwd=0.5,
               se=FALSE,
               inherit.aes=FALSE) +
@@ -111,14 +111,14 @@ print(loo_compare(model_overlap_acc, model_null_acc)[2,1]/
 
 ###
 
-model_overlapinf_acc <- run_brms_model(
-  formula(
-    "Accuracy ~
-                    NeSssKL.Overlap..0.00000001.*Listener.Group +Listener.Group*Trial.Number +
-                    (1|Participant) + (1 + Listener.Group|filename)"),
-  discr_preds, get_filename("overlapinf_acc"), "", "bernoulli")
-
-model_overlapinf_acc <- add_criterion(model_overlapinf_acc, "loo", file = get_filename("overlapinf_acc"))
+#model_overlapinf_acc <- run_brms_model(
+#  formula(
+#    "Accuracy ~
+#                    NeSssKL.Overlap..0.00000001.*Listener.Group +Listener.Group*Trial.Number +
+#                    (1|Participant) + (1 + Listener.Group|filename)"),
+#  discr_preds, get_filename("overlapinf_acc"), "", "bernoulli")
+#
+#model_overlapinf_acc <- add_criterion(model_overlapinf_acc, "loo", file = get_filename("overlapinf_acc"))
 
 
 model_minsum_acc <- run_brms_model(

@@ -7,10 +7,10 @@ discr_by_mct_same_overlap_plot <- ggplot(
   filter(discr_idpreds_c, `Same Top Choice` == "Yes"),
   aes(
     x = `Minimum Categorization Strength`,
-    fill = `NeSssKL Overlap (0.001)`,
+    fill = `JS Overlap`,
     y = `Accuracy` # ,
     #    label = `Phone Contrast`
-    #    label=round(`NeSssKL Overlap (0.001)`, 2)
+    #    label=round(`JS Overlap`, 2)
     #label=round(Accuracy, 2)
   )
 ) +
@@ -44,7 +44,7 @@ discr_by_mct_same_cg_plot <- ggplot(
     fill = `Goodness Difference`,
     y = `Accuracy`  #,
     #label = `Phone Contrast`
-    #    label=round(`NeSssKL Overlap (0.001)`, 2)
+    #    label=round(`JS Overlap`, 2)
     #label=round(Accuracy, 2)
   )
 ) +
@@ -195,7 +195,7 @@ print(elpd_sumdiff_same/se_diff_same)
 #    x = `Δ DTW Mel Filterbank`,
 #    y = `Accuracy`  #,
 #    #label = `Phone Contrast`
-#    #    label=round(`NeSssKL Overlap (0.001)`, 2)
+#    #    label=round(`JS Overlap`, 2)
 #    #label=round(Accuracy, 2)
 #  )
 #) +
@@ -274,7 +274,7 @@ print(elpd_sumdiff_same/se_diff_same)
 #overlap_by_goodness_plot <- ggplot(
 #  filter(discr_idpreds_c, `Same Top Choice` == "Yes"),
 #  aes(
-#    x = `NeSssKL Overlap (0.001)`,
+#    x = `JS Overlap`,
 #    y = `Goodness Difference`
 #  )
 #) +
@@ -288,7 +288,7 @@ print(elpd_sumdiff_same/se_diff_same)
 #discr_by_overlap_mct_plot <- ggplot(
 #  filter(discr_idpreds_c, `Same Top Choice` == "Yes")  %>% arrange(Accuracy),
 #  aes(
-#    y = `NeSssKL Overlap (0.001)`,
+#    y = `JS Overlap`,
 #    fill = `Accuracy`,
 #    x = `Maximum Categorization Threshold`
 #  )
@@ -306,7 +306,7 @@ print(elpd_sumdiff_same/se_diff_same)
 #discr_by_overlap_same_plot <- ggplot(
 #  filter(discr_idpreds_c, `Same Top Choice` == "Yes") ,
 #  aes(
-#    x = `NeSssKL Overlap (0.001)`,
+#    x = `JS Overlap`,
 #    y = `Accuracy`
 #  )
 #) +

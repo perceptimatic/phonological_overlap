@@ -145,6 +145,20 @@ skld_score <- function(ass_tgt, ass_oth, eps) {
   return(1 - (kld_to + kld_ot) / (2. * k))
 }
 
+# Note that skld_score doesn't use this for backward compatibility
+kld <- function(true, obs) {
+  return(sum(ifelse(
+    true %==% 0,
+    0,
+    true*log(true/obs)
+  )))
+}
+
+js_score <- function(ass_tgt, ass_oth) {
+  m <- (ass_tgt+ass_oth)/2
+  return(1 - mean(kld(ass_tgt, m), kld(ass_oth, m)))
+}
+
 idpreds <- assimilation_vectors |>
   pivot_wider(
     id_cols = c("Phone", "Phone Language (Long)", "Phone Language (Code)"),
@@ -190,6 +204,11 @@ idpreds <- assimilation_vectors |>
       `Assimilation:Phone 2`,
       ~ skld_score(unlist(.x), unlist(.y), 1e-3)
     ),   
+    `JS Overlap` = map2_dbl(
+      `Assimilation:Phone 1`,
+      `Assimilation:Phone 2`,
+      ~ js_score(unlist(.x), unlist(.y))
+    ),
     MinSum = map2_dbl(`Assimilation:Phone 1`, `Assimilation:Phone 2`, ~ sum(pmin(.x * .y))),
     Dot = map2_dbl(`Assimilation:Phone 1`, `Assimilation:Phone 2`, ~ sum(.x * .y)),
     Cosine = map2_dbl(`Assimilation:Phone 1`, `Assimilation:Phone 2`, ~ sum(.x * .y)/sqrt((sum(.x * .x)*sum(.y * .y)))),

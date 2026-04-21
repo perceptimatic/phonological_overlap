@@ -45,7 +45,7 @@ print(
       ((`Phone Contrast (Language)` %in% c("o–œ (fr)",  "a–ɐ̃ (pt)" )) &
         (`Listener Group` == "French")) 
   ) |>
-    select(`Accuracy`, `NeSssKL Overlap (0.001)`, `Phone Contrast (Language)`,
+    select(`Accuracy`, `JS Overlap`, `Phone Contrast (Language)`,
            `Haskins`)
 )
 

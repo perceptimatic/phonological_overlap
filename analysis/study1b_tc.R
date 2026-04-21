@@ -6,10 +6,10 @@ discr_by_mct_diff_overlap_plot <- ggplot(
   filter(discr_idpreds_c, `Same Top Choice` == "No"),
   aes(
     x = `Minimum Categorization Strength`,
-    fill = `NeSssKL Overlap (0.001)`,
+    fill = ``,
     y = `Accuracy`,
 #    label = `Phone Contrast`
-#    label=round(`NeSssKL Overlap (0.001)`, 2)
+#    label=round(`JS Overlap`, 2)
 #    label=round(Accuracy, 2)
   )
 ) +
@@ -86,7 +86,7 @@ print(loo_compare(model_diff_null_acc, model_diff_mcs_acc)[2,1]/
 model_diff_overlap_acc <- run_brms_model(
   formula(
     "Accuracy ~
-                    NeSssKL.Overlap..0.001.*Listener.Group +
+                    JS.Overlap*Listener.Group +
                     Listener.Group*Trial.Number +
                     (1|Participant) + (1 + Listener.Group|filename)"),
   filter(discr_preds, `Same Top Choice` == "No"), get_filename("diff_overlap_acc"), "", "bernoulli")
@@ -96,7 +96,7 @@ model_diff_overlap_acc <- add_criterion(model_diff_overlap_acc, "loo",
 model_diff_mcs_overlap_acc <- run_brms_model(
   formula(
     "Accuracy ~
-                    NeSssKL.Overlap..0.001.*Minimum.Categorization.Strength*Listener.Group +
+                    JS.Overlap*Minimum.Categorization.Strength*Listener.Group +
                     Listener.Group*Trial.Number +
                     (1|Participant) + (1 + Listener.Group|filename)"),
   filter(discr_preds, `Same Top Choice` == "No"), get_filename("diff_overlap_mcs_acc"), "", "bernoulli")
@@ -111,15 +111,15 @@ plot_diff_mcs_overlap_acc_model <- mcmc_areas(model_diff_mcs_overlap_acc,
                                       prob=0.95, border_size=0.3) + 
   scale_y_discrete(labels=rev(c(
     "Intercept",
-    "NeSssKL Overlap (0.001)",
+    "JS Overlap",
     "Minimum Categorization Strength",
     "Listener Group\n(French - English)",
     "Experimental Trial\n(per full session)",
-    "NeSssKL Overlap (0.001) ×\nMinimum Categorization Strength",
-    "NeSssKL Overlap (0.001) ×\nListener Group",
+    "JS Overlap ×\nMinimum Categorization Strength",
+    "JS Overlap ×\nListener Group",
     "Minimum Categorization Strength ×\nListener Group",
     "Listener Group ×\nExperimental Trial",
-    "Listener Group ×\nNeSssKL Overlap (0.001) ×\nMinimum Categorization Strength"
+    "Listener Group ×\nJS Overlap ×\nMinimum Categorization Strength"
     )),
     limits=rev) +
   xlab("Coefficient value") +
@@ -135,7 +135,7 @@ print(loo_compare(model_diff_mcs_overlap_acc, model_diff_overlap_acc))
 print(loo_compare(model_diff_mcs_overlap_acc, model_diff_overlap_acc)[2,1]/
         loo_compare(model_diff_mcs_overlap_acc, model_diff_overlap_acc)[2,2])
 
-conditional_effects(model_diff_mcs_overlap_acc, effects="NeSssKL.Overlap..0.001.:Minimum.Categorization.Strength", conditions=data.frame(Listener.Group=c(0.5, -.5)))
+conditional_effects(model_diff_mcs_overlap_acc, effects="JS.Overlap:Minimum.Categorization.Strength", conditions=data.frame(Listener.Group=c(0.5, -.5)))
 
 #discr_by_mct_diff_plot <- ggplot(
 #  filter(discr_idpreds_c, `Same Top Choice` == "No"),

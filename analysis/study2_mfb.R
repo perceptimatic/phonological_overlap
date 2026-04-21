@@ -28,7 +28,7 @@ discr_by_mfb_overlap_plot <- ggplot(
   discr_idpreds_c,
   aes(
     x = `Spectral Distinctness`,
-    fill = `NeSssKL Overlap (0.001)`,
+    fill = `JS Overlap`,
     y = `Accuracy`
   )
 ) +
@@ -53,7 +53,7 @@ ggsave(
 model_overlap_dfbavg_acc <- run_brms_model(
   formula(
     "Accuracy~
-                    NeSssKL.Overlap..0.001.*Spectral.Distinctness..Averaged.*Listener.Group +Listener.Group*Trial.Number +
+                    JS.Overlap*Spectral.Distinctness..Averaged.*Listener.Group +Listener.Group*Trial.Number +
                     (1|Participant) + (1 + Listener.Group|filename)"),
   discr_preds, get_filename("overlap_dfbavg_acc"), "", "bernoulli")
 model_overlap_dfbavg_acc <- add_criterion(model_overlap_dfbavg_acc, "loo", file = get_filename("overlap_dfbavg_acc"))
@@ -65,15 +65,15 @@ summary(model_overlap_dfbavg_acc)
 #                                     prob=0.95, border_size=0.3) + 
 #  scale_y_discrete(labels=rev(c(
 #    "Intercept",
-#    "NeSssKL Overlap (0.001)",
+#    "JS Overlap",
 #    "Spectral Distinctness",
 #    "Listener Group\n(French - English)",
 #    "Experimental Trial\n(per full session)",
-#    "NeSssKL Overlap (0.001) ×\nSpectral Distinctness",
-#    "NeSssKL Overlap (0.001) ×\nListener Group",
+#    "JS Overlap ×\nSpectral Distinctness",
+#    "JS Overlap ×\nListener Group",
 #    "Spectral Distinctness ×\nListener Group",
 #    "Experimental Trial ×\nListener Group",
-#    "NeSssKL Overlap (0.001) ×\nSpectral Distinctness ×\nListener Group")),
+#    "JS Overlap ×\nSpectral Distinctness ×\nListener Group")),
 #    limits=rev) +
 #  xlab("Coefficient value") +
 #  cp_theme()
@@ -165,7 +165,7 @@ for (contrast in unique(discr_idpreds_c$`Phone Contrast (Language)`)) {
     model_overlap_acc,
     newdata=prep_data(discr_preds |>
                         filter(`Phone Contrast (Language)` == contrast) |>
-                        rename(`Phonological Overlap`=`NeSssKL Overlap (0.001)`,
+                        rename(`Phonological Overlap`=`JS Overlap`,
                                `Δ DTW Mel Filterbank`=`Spectral Distinctness`)))
   predictions_c <- discr_preds |> filter(`Phone Contrast (Language)` == contrast) |>
     mutate(`Preds Overlap-MFB`=colMeans(preds_overlap_dfbavg),
@@ -176,7 +176,7 @@ for (contrast in unique(discr_idpreds_c$`Phone Contrast (Language)`)) {
     ),
     c("Listener Group", "Phone Language (Code)", "Phone Language (Long)",
       "Phone Contrast"),
-    c("Accuracy",  "NeSssKL Overlap (0.001)", "Preds Overlap-MFB",
+    c("Accuracy",  "JS Overlap", "Preds Overlap-MFB",
       "Preds Overlap")
     )
   predictions <- bind_rows(predictions,predictions_c)
@@ -263,7 +263,7 @@ ggsave(
 #    "Phone Contrast (Language)"
 #  ),
 #  c("Listener Group", "Phone Language (Code)", "Phone Language (Long)", "Phone Contrast"),
-#  c("Accuracy",  "NeSssKL Overlap (0.001)", "Preds Overlap-MFB",
+#  c("Accuracy",  "JS Overlap", "Preds Overlap-MFB",
 #    "Preds Overlap")
 #) 
 #
@@ -288,7 +288,7 @@ ggsave(
 #  theme(legend.position = "none") + 
 #  geom_abline() +
 ##  geom_smooth(data=discr_idpreds_c,
-##              aes(y=`Accuracy`, x=`NeSssKL Overlap (0.001)`),
+##              aes(y=`Accuracy`, x=`JS Overlap`),
 ##              colour="#00000044", lwd=0.5,
 ##              se=FALSE,
 ##              inherit.aes=FALSE) +
