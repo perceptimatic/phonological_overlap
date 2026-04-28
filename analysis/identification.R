@@ -150,7 +150,7 @@ kld <- function(true, obs) {
   return(sum(ifelse(
     true %==% 0,
     0,
-    true*log(true/obs)
+    true*log2(true/obs)
   )))
 }
 

@@ -2,6 +2,46 @@ source("setup.R")
 
 options(mc.cores=4)
 
+model_null_acc <- run_brms_model(
+  formula(
+    "Accuracy ~
+                    Listener.Group*Trial.Number +
+                    (1|Participant) + (1 + Listener.Group|filename)"),
+  discr_preds, get_filename("null_acc"), "", "bernoulli")
+model_null_acc <- add_criterion(model_null_acc, "loo", file = get_filename("null_acc"))
+
+model_overlap_acc <- run_brms_model(
+  formula(
+    "Accuracy ~
+                    JS.Overlap*Listener.Group +Listener.Group*Trial.Number +
+                    (1|Participant) + (1 + Listener.Group|filename)"),
+  discr_preds, get_filename("overlap_acc"), "", "bernoulli")
+model_overlap_acc <- add_criterion(model_overlap_acc, "loo", file = get_filename("overlap_acc"))
+
+print(model_overlap_acc)
+
+print(loo_compare(model_overlap_acc, model_null_acc))
+print(loo_compare(model_overlap_acc, model_null_acc)[2,1]/
+        loo_compare(model_overlap_acc, model_null_acc)[2,2])
+
+
+model_minsum_acc <- run_brms_model(
+  formula(
+    "Accuracy ~
+                    MinSum*Listener.Group +Listener.Group*Trial.Number +
+                    (1|Participant) + (1 + Listener.Group|filename)"),
+  discr_preds, get_filename("minsum_acc"), "", "bernoulli")
+
+model_minsum_acc <- add_criterion(model_minsum_acc, "loo", file = get_filename("minsum_acc"))
+
+
+
+print(loo_compare(model_overlap_acc, model_minsum_acc))
+print(loo_compare(model_overlap_acc, model_minsum_acc)[2,1]/
+        loo_compare(model_overlap_acc, model_minsum_acc)[2,2])
+
+
+
 discr_by_overlap_plot <- ggplot(
   discr_idpreds_c,
   aes(
@@ -66,23 +106,9 @@ ggsave("discr_by_overlap_highlight_plot.png",
        height = 4.5,
        units="in", dpi=600)
 
+print(discr_idpreds_c |> filter(`Phone Contrast (Language)`=='e–i (fr)') |> 
+        select(c(`Listener Group`, `JS Overlap`)))
 
-model_null_acc <- run_brms_model(
-  formula(
-    "Accuracy ~
-                    Listener.Group*Trial.Number +
-                    (1|Participant) + (1 + Listener.Group|filename)"),
-  discr_preds, get_filename("null_acc"), "", "bernoulli")
-model_null_acc <- add_criterion(model_null_acc, "loo", file = get_filename("null_acc"))
-
-
-model_overlap_acc <- run_brms_model(
-  formula(
-    "Accuracy ~
-                    Phonological.Overlap*Listener.Group +Listener.Group*Trial.Number +
-                    (1|Participant) + (1 + Listener.Group|filename)"),
-  discr_preds, get_filename("overlap_acc"), "", "bernoulli")
-model_overlap_acc <- add_criterion(model_overlap_acc, "loo", file = get_filename("overlap_acc"))
 
 plot_overlap_acc_model <- mcmc_areas(model_overlap_acc,
                                      pars=names(model_overlap_acc$fit)[1:6],
@@ -104,29 +130,5 @@ ggsave("plot_overlap_coefs.png",
        width=5, height=5, units="in", dpi=600)
 
 
-print(loo_compare(model_overlap_acc, model_null_acc))
-print(loo_compare(model_overlap_acc, model_null_acc)[2,1]/
-        loo_compare(model_overlap_acc, model_null_acc)[2,2])
 
-
-###
-
-#model_overlapinf_acc <- run_brms_model(
-#  formula(
-#    "Accuracy ~
-#                    NeSssKL.Overlap..0.00000001.*Listener.Group +Listener.Group*Trial.Number +
-#                    (1|Participant) + (1 + Listener.Group|filename)"),
-#  discr_preds, get_filename("overlapinf_acc"), "", "bernoulli")
-#
-#model_overlapinf_acc <- add_criterion(model_overlapinf_acc, "loo", file = get_filename("overlapinf_acc"))
-
-
-model_minsum_acc <- run_brms_model(
-  formula(
-    "Accuracy ~
-                    MinSum*Listener.Group +Listener.Group*Trial.Number +
-                    (1|Participant) + (1 + Listener.Group|filename)"),
-  discr_preds, get_filename("minsum_acc"), "", "bernoulli")
-
-model_minsum_acc <- add_criterion(model_minsum_acc, "loo", file = get_filename("minsum_acc"))
 
